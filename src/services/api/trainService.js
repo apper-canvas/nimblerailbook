@@ -275,5 +275,3 @@ const trainService = {
 };
 
 export default trainService;
-
-export default trainService;

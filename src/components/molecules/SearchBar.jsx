@@ -56,8 +56,9 @@ setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className={cn("relative", className)} ref={searchRef}>
