@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Button from "@/components/atoms/Button";
-import FormField from "@/components/molecules/FormField";
-import SearchBar from "@/components/molecules/SearchBar";
-import Select from "@/components/atoms/Select";
-import Input from "@/components/atoms/Input";
-import ApperIcon from "@/components/ApperIcon";
-import stationService from "@/services/api/stationService";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
+import stationService from "@/services/api/stationService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
+import Select from "@/components/atoms/Select";
+import FormField from "@/components/molecules/FormField";
+import SearchBar from "@/components/molecules/SearchBar";
 
 const SearchForm = ({ initialData, onSearch }) => {
   const navigate = useNavigate();
@@ -103,7 +103,7 @@ const suggestions = await stationService.search(query);
       return;
     }
 
-    setIsLoading(true);
+setIsLoading(true);
     
     try {
       // If onSearch is provided (for embedded use), call it
@@ -112,7 +112,7 @@ const suggestions = await stationService.search(query);
       } else {
         // Navigate to search results page with query params
         const searchParams = new URLSearchParams(formData).toString();
-        navigate(`/search?${searchParams}`);
+        navigate(`/search-results?${searchParams}`);
       }
     } catch (error) {
       console.error("Search error:", error);
