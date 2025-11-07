@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import ApperIcon from "@/components/ApperIcon";
-import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
 import { cn } from "@/utils/cn";
 
 const SearchBar = ({ 
@@ -40,13 +40,12 @@ const SearchBar = ({
     }
   };
 
-  const handleSubmit = (e) => {
+const handleSubmit = (e) => {
     e.preventDefault();
     if (onSearch) {
       onSearch(searchValue);
     }
     setIsOpen(false);
-setIsOpen(false);
   };
 
   useEffect(() => {
@@ -56,7 +55,7 @@ setIsOpen(false);
       }
     };
 
-document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
@@ -80,26 +79,23 @@ document.addEventListener('mousedown', handleClickOutside);
         </Button>
       </form>
 
-      {isOpen && suggestions.length > 0 && (
+{isOpen && suggestions.length > 0 && (
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {suggestions.map((suggestion, index) => (
             <div
               key={index}
-              className="px-4 py-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-all duration-200"
               onClick={() => handleSuggestionClick(suggestion)}
+              className="flex items-center justify-between p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-150"
             >
-              <div className="flex items-center">
-                <ApperIcon name="MapPin" className="w-4 h-4 text-gray-400 mr-3" />
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {suggestion.name || suggestion}
+              <div>
+                <p className="font-medium text-gray-900">
+                  {suggestion?.name_c || suggestion?.Name || suggestion?.name || suggestion}
+                </p>
+                {(suggestion?.city_c || suggestion?.city) && (
+                  <p className="text-sm text-gray-500">
+                    {suggestion?.city_c || suggestion?.city} - {suggestion?.code_c || suggestion?.code}
                   </p>
-                  {suggestion.city && (
-                    <p className="text-sm text-gray-500">
-                      {suggestion.city} - {suggestion.code}
-                    </p>
-                  )}
-                </div>
+                )}
               </div>
             </div>
           ))}

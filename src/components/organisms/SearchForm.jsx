@@ -54,7 +54,7 @@ const suggestions = await stationService.search(query);
   const handleStationSelect = (station, field) => {
     setFormData(prev => ({
 ...prev,
-      [field]: station.code
+[field]: station?.code_c || station?.code || station
     }));
     setStationSuggestions([]);
     setActiveField(null);
@@ -157,8 +157,8 @@ const suggestions = await stationService.search(query);
                   setFormData(prev => ({ ...prev, origin: value }));
                   handleStationSearch(value, "origin");
                 }}
-                suggestions={activeField === "origin" ? stationSuggestions : []}
-onSuggestionClick={(station) => handleStationSelect(station, "origin")}
+suggestions={activeField === "origin" ? stationSuggestions : []}
+                onSuggestionClick={(station) => handleStationSelect(station, "origin")}
               />
             </FormField>
           </div>
@@ -179,7 +179,7 @@ onSuggestionClick={(station) => handleStationSelect(station, "origin")}
                     handleStationSearch(value, "destination");
                   }}
 suggestions={activeField === "destination" ? stationSuggestions : []}
-                  onSuggestionClick={(station) => handleStationSelect(station, "destination")}
+                onSuggestionClick={(station) => handleStationSelect(station, "destination")}
                 />
                 <Button
                   type="button"

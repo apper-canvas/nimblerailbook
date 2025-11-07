@@ -174,8 +174,8 @@ const TrainStatus = () => {
                 <h2 className="text-2xl font-bold mb-2">
                   {trainStatus.trainNumber} - {trainStatus.trainName}
                 </h2>
-                <p className="text-blue-100">
-                  {trainStatus.origin} → {trainStatus.destination}
+<p className="text-blue-100">
+                  {trainStatus?.origin_c || trainStatus?.origin} → {trainStatus?.destination_c || trainStatus?.destination}
                 </p>
               </div>
               <Badge 
@@ -204,7 +204,7 @@ const TrainStatus = () => {
                   <ApperIcon name="MapPin" className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-1">Next Station</h3>
-                <p className="text-sm text-gray-600">{trainStatus.nextStation}</p>
+<p className="text-sm text-gray-600">{trainStatus?.nextStation_c || trainStatus?.nextStation}</p>
               </div>
 
               <div className="text-center p-4 bg-gradient-to-r from-slate-50 to-blue-50 rounded-lg border border-blue-100">
@@ -221,8 +221,8 @@ const TrainStatus = () => {
               <div className="text-center">
                 <p className="text-2xl font-bold text-gray-900 mb-1">
                   {trainStatus.departureTime}
-                </p>
-                <p className="text-gray-600 font-medium">{trainStatus.origin}</p>
+</p>
+                <p className="text-gray-600 font-medium">{trainStatus?.origin_c || trainStatus?.origin}</p>
                 <p className="text-sm text-gray-500">Departure</p>
               </div>
               
@@ -240,8 +240,8 @@ const TrainStatus = () => {
               <div className="text-center">
                 <p className="text-2xl font-bold text-gray-900 mb-1">
                   {trainStatus.arrivalTime}
-                </p>
-                <p className="text-gray-600 font-medium">{trainStatus.destination}</p>
+</p>
+                <p className="text-gray-600 font-medium">{trainStatus?.destination_c || trainStatus?.destination}</p>
                 <p className="text-sm text-gray-500">Arrival</p>
               </div>
             </div>
