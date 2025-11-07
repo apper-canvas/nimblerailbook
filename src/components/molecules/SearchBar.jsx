@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import ApperIcon from "@/components/ApperIcon";
 import Input from "@/components/atoms/Input";
 import Button from "@/components/atoms/Button";
-import ApperIcon from "@/components/ApperIcon";
 import { cn } from "@/utils/cn";
 
 const SearchBar = ({ 
@@ -46,9 +46,9 @@ const SearchBar = ({
       onSearch(searchValue);
     }
     setIsOpen(false);
+setIsOpen(false);
   };
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -58,7 +58,6 @@ const SearchBar = ({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   return (
     <div className={cn("relative", className)} ref={searchRef}>

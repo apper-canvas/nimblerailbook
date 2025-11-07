@@ -1,32 +1,134 @@
-import bookingsData from "@/services/mockData/bookings.json";
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-let bookings = [...bookingsData];
-
-const { ApperClient } = window.ApperSDK || {};
+import { getApperClient } from "@/services/apperClient";
 
 const bookingService = {
   async getAll() {
-    await delay(400);
-    return [...bookings];
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error('ApperClient not available');
+      }
+
+      const response = await apperClient.fetchRecords('booking_c', {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "pnr_c"}},
+          {"field": {"Name": "train_number_c"}},
+          {"field": {"Name": "train_name_c"}},
+          {"field": {"Name": "origin_c"}},
+          {"field": {"Name": "destination_c"}},
+          {"field": {"Name": "departure_time_c"}},
+          {"field": {"Name": "arrival_time_c"}},
+          {"field": {"Name": "journey_date_c"}},
+          {"field": {"Name": "booking_date_c"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "class_c"}},
+          {"field": {"Name": "fare_c"}},
+          {"field": {"Name": "passengers_c"}},
+          {"field": {"Name": "seat_numbers_c"}}
+        ]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        return [];
+      }
+
+      return (response.data || []).map(booking => this.transformBookingData(booking));
+    } catch (error) {
+      console.error("Error fetching bookings:", error?.response?.data?.message || error);
+      return [];
+    }
   },
 
-async getByPnr(pnr) {
-    await delay(300);
-    return bookings.find(booking => booking.pnr === pnr);
+  transformBookingData(booking) {
+    return {
+      Id: booking.Id,
+      pnr: booking.pnr_c,
+      trainNumber: booking.train_number_c,
+      trainName: booking.train_name_c,
+      origin: booking.origin_c,
+      destination: booking.destination_c,
+      departureTime: booking.departure_time_c,
+      arrivalTime: booking.arrival_time_c,
+      journeyDate: booking.journey_date_c,
+      bookingDate: booking.booking_date_c,
+      status: booking.status_c,
+      class: booking.class_c,
+      fare: booking.fare_c,
+      passengers: this.parsePassengers(booking.passengers_c),
+      seatNumbers: this.parseSeatNumbers(booking.seat_numbers_c)
+    };
+  },
+
+  parsePassengers(passengersString) {
+    try {
+      return passengersString ? JSON.parse(passengersString) : [];
+    } catch (error) {
+      console.error("Error parsing passengers:", error);
+      return [];
+    }
+  },
+
+  parseSeatNumbers(seatNumbersString) {
+    try {
+      return seatNumbersString ? JSON.parse(seatNumbersString) : [];
+    } catch (error) {
+      console.error("Error parsing seat numbers:", error);
+      return [];
+    }
+  },
+
+  async getByPnr(pnr) {
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error('ApperClient not available');
+      }
+
+      const response = await apperClient.fetchRecords('booking_c', {
+        fields: [
+          {"field": {"Name": "Name"}},
+          {"field": {"Name": "pnr_c"}},
+          {"field": {"Name": "train_number_c"}},
+          {"field": {"Name": "train_name_c"}},
+          {"field": {"Name": "origin_c"}},
+          {"field": {"Name": "destination_c"}},
+          {"field": {"Name": "departure_time_c"}},
+          {"field": {"Name": "arrival_time_c"}},
+          {"field": {"Name": "journey_date_c"}},
+          {"field": {"Name": "booking_date_c"}},
+          {"field": {"Name": "status_c"}},
+          {"field": {"Name": "class_c"}},
+          {"field": {"Name": "fare_c"}},
+          {"field": {"Name": "passengers_c"}},
+          {"field": {"Name": "seat_numbers_c"}}
+        ],
+        where: [{
+          "FieldName": "pnr_c",
+          "Operator": "EqualTo",
+          "Values": [pnr]
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+
+      const data = response.data && response.data.length > 0 ? response.data[0] : null;
+      return data ? this.transformBookingData(data) : null;
+    } catch (error) {
+      console.error(`Error fetching booking by PNR ${pnr}:`, error?.response?.data?.message || error);
+      return null;
+    }
   },
 
   async downloadTicketPdf(booking) {
     try {
-      if (!ApperClient) {
+      const apperClient = getApperClient();
+      if (!apperClient) {
         throw new Error('ApperClient not available');
       }
-
-      const apperClient = new ApperClient({
-        apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
-        apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
-      });
 
       const result = await apperClient.functions.invoke(import.meta.env.VITE_GENERATE_TICKET_PDF, {
         body: JSON.stringify(booking),
@@ -40,7 +142,6 @@ async getByPnr(pnr) {
         throw new Error(result.error || 'Failed to generate PDF');
       }
 
-      // Create download link
       const link = document.createElement('a');
       link.href = result.pdfData;
       link.download = result.filename;
@@ -56,46 +157,110 @@ async getByPnr(pnr) {
   },
 
   async getUserBookings() {
-    await delay(400);
-    // In a real app, this would filter by user ID
-    return [...bookings];
+    return this.getAll();
   },
 
   async createBooking(bookingData) {
-    await delay(600);
-    
-    const newBooking = {
-      Id: Math.max(...bookings.map(b => b.Id)) + 1,
-      pnr: this.generatePnr(),
-      ...bookingData,
-      bookingDate: new Date().toISOString().split('T')[0],
-      status: 'Confirmed'
-    };
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error('ApperClient not available');
+      }
 
-    bookings.unshift(newBooking);
-    return newBooking;
+      const pnr = this.generatePnr();
+      const bookingDate = new Date().toISOString().split('T')[0];
+
+      const response = await apperClient.createRecord('booking_c', {
+        records: [{
+          Name: `Booking ${pnr}`,
+          pnr_c: pnr,
+          train_number_c: bookingData.trainNumber,
+          train_name_c: bookingData.trainName,
+          origin_c: bookingData.origin,
+          destination_c: bookingData.destination,
+          departure_time_c: bookingData.departureTime,
+          arrival_time_c: bookingData.arrivalTime,
+          journey_date_c: bookingData.journeyDate,
+          booking_date_c: bookingDate,
+          status_c: 'Confirmed',
+          class_c: bookingData.class,
+          fare_c: bookingData.fare,
+          passengers_c: JSON.stringify(bookingData.passengers),
+          seat_numbers_c: JSON.stringify(bookingData.seatNumbers)
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      if (response.results && response.results.length > 0) {
+        const result = response.results[0];
+        if (result.success) {
+          return this.transformBookingData({
+            ...result.data,
+            pnr_c: pnr,
+            train_number_c: bookingData.trainNumber,
+            train_name_c: bookingData.trainName,
+            origin_c: bookingData.origin,
+            destination_c: bookingData.destination,
+            departure_time_c: bookingData.departureTime,
+            arrival_time_c: bookingData.arrivalTime,
+            journey_date_c: bookingData.journeyDate,
+            booking_date_c: bookingDate,
+            status_c: 'Confirmed',
+            class_c: bookingData.class,
+            fare_c: bookingData.fare,
+            passengers_c: JSON.stringify(bookingData.passengers),
+            seat_numbers_c: JSON.stringify(bookingData.seatNumbers)
+          });
+        } else {
+          throw new Error(result.message || 'Failed to create booking');
+        }
+      }
+
+      throw new Error('No response data received');
+    } catch (error) {
+      console.error("Error creating booking:", error?.response?.data?.message || error);
+      throw error;
+    }
   },
 
   async cancelBooking(pnr) {
-    await delay(500);
-    const bookingIndex = bookings.findIndex(b => b.pnr === pnr);
-    
-    if (bookingIndex === -1) {
-      throw new Error('Booking not found');
+    try {
+      const booking = await this.getByPnr(pnr);
+      if (!booking) {
+        throw new Error('Booking not found');
+      }
+
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error('ApperClient not available');
+      }
+
+      const response = await apperClient.updateRecord('booking_c', {
+        records: [{
+          Id: booking.Id,
+          status_c: 'Cancelled'
+        }]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        throw new Error(response.message);
+      }
+
+      const refundAmount = this.calculateRefund(booking);
+      
+      return {
+        booking: { ...booking, status: 'Cancelled' },
+        refundAmount
+      };
+    } catch (error) {
+      console.error("Error cancelling booking:", error?.response?.data?.message || error);
+      throw error;
     }
-
-    const booking = bookings[bookingIndex];
-    const refundAmount = this.calculateRefund(booking);
-    
-    bookings[bookingIndex] = {
-      ...booking,
-      status: 'Cancelled'
-    };
-
-    return {
-      booking: bookings[bookingIndex],
-      refundAmount
-    };
   },
 
   generatePnr() {
@@ -109,30 +274,14 @@ async getByPnr(pnr) {
     
     let refundPercentage = 0;
     if (daysUntilJourney >= 1) {
-      refundPercentage = 0.9; // 90% refund
+      refundPercentage = 0.9;
     } else if (daysUntilJourney >= 0) {
-      refundPercentage = 0.5; // 50% refund
+      refundPercentage = 0.5;
     } else {
-      refundPercentage = 0; // No refund for past journeys
+      refundPercentage = 0;
     }
     
     return Math.floor(booking.fare * refundPercentage);
-  },
-
-  async calculateFare(trainId, travelClass, passengerCount) {
-    await delay(300);
-    const trainsData = await import("@/services/mockData/trains.json");
-    const train = trainsData.default.find(t => t.Id === parseInt(trainId));
-    
-    if (!train || !train.fare[travelClass]) {
-      return { baseFare: 0, taxes: 0, total: 0 };
-    }
-
-    const baseFare = train.fare[travelClass] * passengerCount;
-    const taxes = Math.floor(baseFare * 0.05); // 5% tax
-    const total = baseFare + taxes;
-
-    return { baseFare, taxes, total };
   }
 };
 

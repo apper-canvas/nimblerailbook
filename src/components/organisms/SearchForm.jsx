@@ -42,7 +42,7 @@ const SearchForm = ({ initialData, onSearch }) => {
     }
 
     try {
-      const suggestions = await stationService.search(query);
+const suggestions = await stationService.search(query);
       setStationSuggestions(suggestions);
       setActiveField(field);
     } catch (error) {
@@ -53,7 +53,7 @@ const SearchForm = ({ initialData, onSearch }) => {
 
   const handleStationSelect = (station, field) => {
     setFormData(prev => ({
-      ...prev,
+...prev,
       [field]: station.code
     }));
     setStationSuggestions([]);
@@ -158,7 +158,7 @@ const SearchForm = ({ initialData, onSearch }) => {
                   handleStationSearch(value, "origin");
                 }}
                 suggestions={activeField === "origin" ? stationSuggestions : []}
-                onSuggestionClick={(station) => handleStationSelect(station, "origin")}
+onSuggestionClick={(station) => handleStationSelect(station, "origin")}
               />
             </FormField>
           </div>
@@ -178,7 +178,7 @@ const SearchForm = ({ initialData, onSearch }) => {
                     setFormData(prev => ({ ...prev, destination: value }));
                     handleStationSearch(value, "destination");
                   }}
-                  suggestions={activeField === "destination" ? stationSuggestions : []}
+suggestions={activeField === "destination" ? stationSuggestions : []}
                   onSuggestionClick={(station) => handleStationSelect(station, "destination")}
                 />
                 <Button

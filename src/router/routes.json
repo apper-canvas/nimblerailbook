@@ -1,0 +1,127 @@
+{
+  "/": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Homepage is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/login": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Login page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/signup": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Signup page is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/my-bookings": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to view bookings",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/booking-confirmation": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "User must be logged in to view booking confirmation",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/search-results": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Search results are public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  },
+  "/seat-selection": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Seat selection requires authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/passenger-details": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Passenger details requires authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/review-payment": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Payment review requires authentication",
+            "rule": "authenticated"
+          }
+        ]
+      },
+      "redirectOnDeny": "/login"
+    }
+  },
+  "/train-status": {
+    "allow": {
+      "when": {
+        "conditions": [
+          {
+            "label": "Train status is public",
+            "rule": "public"
+          }
+        ]
+      }
+    }
+  }
+}

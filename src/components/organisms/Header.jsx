@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Button from "@/components/atoms/Button";
 import ApperIcon from "@/components/ApperIcon";
+import { useAuth } from "@/layouts/Root";
 import { cn } from "@/utils/cn";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, isAuthenticated } = useSelector(state => state.user);
+  const { logout } = useAuth();
 
   const navigation = [
     { name: "Home", path: "/", icon: "Home" },
@@ -18,6 +22,11 @@ const Header = () => {
     if (path === "/" && location.pathname === "/") return true;
     if (path !== "/" && location.pathname.startsWith(path)) return true;
     return false;
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -54,6 +63,37 @@ const Header = () => {
                 <span>{item.name}</span>
               </Link>
             ))}
+
+            {/* User Section */}
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <div className="hidden lg:block">
+                  <p className="text-sm text-gray-600">Welcome, {user?.firstName || 'User'}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="flex items-center space-x-2"
+                >
+                  <ApperIcon name="LogOut" className="w-4 h-4" />
+                  <span>Logout</span>
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Link to="/login">
+                  <Button variant="outline" size="sm">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button variant="primary" size="sm">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -89,6 +129,36 @@ const Header = () => {
                   <span>{item.name}</span>
                 </Link>
               ))}
+
+              {/* Mobile User Section */}
+              {isAuthenticated ? (
+                <div className="border-t border-gray-100 pt-4 mt-4">
+                  <div className="px-4 mb-3">
+                    <p className="text-sm text-gray-600">Welcome, {user?.firstName || 'User'}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleLogout}
+                    className="w-full mx-4 flex items-center justify-center space-x-2"
+                  >
+                    <ApperIcon name="LogOut" className="w-4 h-4" />
+                    <span>Logout</span>
+                  </Button>
+                </div>
+              ) : (
+                <div className="border-t border-gray-100 pt-4 mt-4 px-4 space-y-2">
+                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="primary" className="w-full">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </nav>
           </div>
         )}
