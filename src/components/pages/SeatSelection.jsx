@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import SeatLayout from "@/components/organisms/SeatLayout";
+import { toast } from "react-toastify";
+import trainService from "@/services/api/trainService";
+import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
-import Badge from "@/components/atoms/Badge";
 import Select from "@/components/atoms/Select";
+import Badge from "@/components/atoms/Badge";
+import SeatLayout from "@/components/organisms/SeatLayout";
+import Empty from "@/components/ui/Empty";
 import Loading from "@/components/ui/Loading";
 import ErrorView from "@/components/ui/ErrorView";
-import Empty from "@/components/ui/Empty";
-import ApperIcon from "@/components/ApperIcon";
-import trainService from "@/services/api/trainService";
-import { toast } from "react-toastify";
 
 const SeatSelection = () => {
   const navigate = useNavigate();
@@ -168,27 +168,48 @@ const SeatSelection = () => {
         </div>
       </div>
 
-      {/* Train Details */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {train.trainNumber} - {train.trainName}
-            </h1>
-            <p className="text-gray-600 mb-4 md:mb-0">
-              {train.origin} → {train.destination} • {searchCriteria.journeyDate}
-            </p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Departure</p>
-              <p className="text-lg font-semibold text-gray-900">{train.departureTime}</p>
+{/* Enhanced Train Details */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mb-8">
+        <div className="bg-gradient-to-r from-primary to-secondary p-6 text-white">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold mb-2">
+                {train.trainNumber} - {train.trainName}
+              </h1>
+              <p className="text-blue-100 mb-4 md:mb-0">
+                {train.origin} → {train.destination} • {searchCriteria.journeyDate}
+              </p>
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Duration</p>
-              <p className="text-lg font-semibold text-gray-900">{train.duration}</p>
+            <div className="flex items-center space-x-6">
+              <div className="text-center">
+                <p className="text-sm text-blue-200">Departure</p>
+                <p className="text-xl font-bold">{train.departureTime}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-blue-200">Duration</p>
+                <p className="text-xl font-bold">{train.duration}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-blue-200">Arrival</p>
+                <p className="text-xl font-bold">{train.arrivalTime}</p>
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Fare Information */}
+        <div className="p-6 bg-gradient-to-r from-slate-50 to-blue-50 border-b border-blue-100">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            {Object.entries(train.fare || {}).map(([classType, fare]) => (
+              <div key={classType} className="text-center p-3 bg-white rounded-lg border border-blue-200">
+                <p className="text-sm font-semibold text-gray-700">{classType}</p>
+                <p className="text-lg font-bold text-primary">₹{fare}</p>
+                <p className="text-xs text-gray-500">
+                  {train.availableSeats[classType]} seats
+                </p>
+              </div>
+            ))}
+</div>
         </div>
       </div>
 

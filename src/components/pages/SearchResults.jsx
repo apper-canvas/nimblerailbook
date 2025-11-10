@@ -1,36 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import TrainCard from "@/components/molecules/TrainCard";
+import { toast } from "react-toastify";
+import stationService from "@/services/api/stationService";
+import trainService from "@/services/api/trainService";
+import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
-import Badge from "@/components/atoms/Badge";
 import Select from "@/components/atoms/Select";
+import Badge from "@/components/atoms/Badge";
+import TrainCard from "@/components/molecules/TrainCard";
+import Empty from "@/components/ui/Empty";
 import Loading from "@/components/ui/Loading";
 import ErrorView from "@/components/ui/ErrorView";
-import Empty from "@/components/ui/Empty";
-import ApperIcon from "@/components/ApperIcon";
-import trainService from "@/services/api/trainService";
-import stationService from "@/services/api/stationService";
-import { toast } from "react-toastify";
 
 const SearchResults = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  const [trains, setTrains] = useState([]);
+const [trains, setTrains] = useState([]);
   const [filteredTrains, setFilteredTrains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   
   const [filters, setFilters] = useState({
     class: "",
     departureTime: "",
     duration: "",
-    availability: ""
+    availability: "",
+    fareRange: ""
   });
 
-  const [sortBy, setSortBy] = useState("departure");
+const [sortBy, setSortBy] = useState("departure");
   const [searchCriteria, setSearchCriteria] = useState({});
   const [stationNames, setStationNames] = useState({});
+  const [selectedTrainRoute, setSelectedTrainRoute] = useState(null);
+  const [showRouteModal, setShowRouteModal] = useState(false);
 
   useEffect(() => {
     const params = {
@@ -176,12 +180,52 @@ const SearchResults = () => {
     applyFiltersAndSort();
   }, [filters, sortBy, trains]);
 
-  const handleBookNow = (train) => {
+const handleBookNow = (train) => {
     const params = new URLSearchParams({
       trainId: train.Id,
       ...searchCriteria
     });
     navigate(`/seat-selection?${params.toString()}`);
+  };
+
+  const handleViewDetails = async (train) => {
+    try {
+      const routeDetails = await trainService.getRouteDetails(train.Id);
+      if (routeDetails) {
+        // Show route details in modal or expand section
+        setSelectedTrainRoute(routeDetails);
+        setShowRouteModal(true);
+      }
+    } catch (error) {
+      console.error("Error fetching route details:", error);
+      toast.error("Failed to fetch route details");
+    }
+  };
+
+  const refreshAvailability = async () => {
+    if (refreshing) return;
+    
+    setRefreshing(true);
+    try {
+      const refreshedTrains = await Promise.all(
+        trains.map(async (train) => {
+          const freshAvailability = await trainService.refreshAvailability(train.Id);
+          if (freshAvailability) {
+            return { ...train, availableSeats: freshAvailability };
+          }
+          return train;
+        })
+      );
+      
+      setTrains(refreshedTrains);
+      setFilteredTrains(refreshedTrains);
+      toast.success("Seat availability refreshed");
+    } catch (error) {
+      console.error("Error refreshing availability:", error);
+      toast.error("Failed to refresh availability");
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const clearFilters = () => {
@@ -360,11 +404,12 @@ const SearchResults = () => {
             />
           ) : (
             <div className="space-y-4">
-              {filteredTrains.map((train) => (
+{filteredTrains.map((train) => (
                 <TrainCard
                   key={train.Id}
                   train={train}
                   onBookNow={handleBookNow}
+                  onViewDetails={handleViewDetails}
                 />
               ))}
             </div>

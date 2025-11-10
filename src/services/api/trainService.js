@@ -1,5 +1,4 @@
 import { getApperClient } from "@/services/apperClient";
-
 const trainService = {
   async searchTrains(searchParams) {
     const { origin, destination, journeyDate, travelClass } = searchParams;
@@ -269,6 +268,154 @@ const trainService = {
       };
     } catch (error) {
       console.error(`Error getting train status for ${trainNumber}:`, error?.response?.data?.message || error);
+      return null;
+return null;
+    }
+  },
+
+  async getRouteDetails(trainId) {
+    try {
+      if (!train) return null;
+
+      // Generate realistic intermediate stations between origin and destination
+      const intermediateStations = this.generateIntermediateStations(train.origin, train.destination);
+      
+      return {
+        trainId: trainId,
+        trainNumber: train.trainNumber,
+        trainName: train.trainName,
+        origin: train.origin,
+        destination: train.destination,
+        totalDistance: this.calculateDistance(train.origin, train.destination),
+        totalDuration: train.duration,
+        stoppages: intermediateStations.map((station, index) => ({
+          stationName: station.name,
+          stationCode: station.code,
+          arrivalTime: this.calculateStationTime(train.departureTime, index + 1, intermediateStations.length + 1),
+          departureTime: this.calculateStationTime(train.departureTime, index + 1, intermediateStations.length + 1, 2),
+          stopDuration: index === 0 || index === intermediateStations.length - 1 ? "0 min" : "2 min",
+          distance: Math.round((index + 1) * this.calculateDistance(train.origin, train.destination) / (intermediateStations.length + 1)),
+          platform: Math.floor(Math.random() * 8) + 1
+        }))
+      };
+    } catch (error) {
+      console.error(`Error getting route details for train ${trainId}:`, error?.response?.data?.message || error);
+      return null;
+    }
+  },
+
+  generateIntermediateStations(origin, destination) {
+    const commonStations = [
+      { name: "Junction Station", code: "JST" },
+      { name: "Central Station", code: "CNT" },
+      { name: "Railway Junction", code: "RLJ" },
+      { name: "Main Station", code: "MST" },
+      { name: "Terminal Station", code: "TRM" },
+      { name: "Express Station", code: "EXP" }
+    ];
+
+    const stationCount = Math.floor(Math.random() * 4) + 2; // 2-5 intermediate stations
+    const selectedStations = [];
+    
+    for (let i = 0; i < stationCount; i++) {
+      const station = commonStations[Math.floor(Math.random() * commonStations.length)];
+      selectedStations.push({
+        name: `${station.name} ${i + 1}`,
+        code: `${station.code}${i + 1}`
+      });
+    }
+
+    return selectedStations;
+  },
+
+  calculateDistance(origin, destination) {
+    // Generate realistic distance based on station names (mock calculation)
+    const baseDistance = Math.floor(Math.random() * 800) + 200; // 200-1000 km
+    return baseDistance;
+  },
+
+  calculateStationTime(departureTime, stationIndex, totalStations, additionalMinutes = 0) {
+    const [hours, minutes] = departureTime.split(':').map(Number);
+    const departureMinutes = hours * 60 + minutes;
+    
+    // Calculate proportional time for this station
+    const journeyMinutes = Math.floor(Math.random() * 480) + 120; // 2-8 hours journey
+    const stationMinutes = departureMinutes + (journeyMinutes * stationIndex / totalStations) + additionalMinutes;
+    
+    const finalHours = Math.floor(stationMinutes / 60) % 24;
+    const finalMins = Math.floor(stationMinutes % 60);
+    
+    return `${finalHours.toString().padStart(2, '0')}:${finalMins.toString().padStart(2, '0')}`;
+  },
+
+  async refreshAvailability(trainId) {
+    try {
+      const apperClient = getApperClient();
+      if (!apperClient) {
+        throw new Error('ApperClient not available');
+      }
+
+      // Fetch fresh data from database
+      const response = await apperClient.getRecordById('train_c', parseInt(trainId), {
+        fields: [
+          {"field": {"Name": "available_seats_1a_c"}},
+          {"field": {"Name": "available_seats_2a_c"}},
+          {"field": {"Name": "available_seats_3a_c"}},
+          {"field": {"Name": "available_seats_sl_c"}},
+          {"field": {"Name": "available_seats_cc_c"}},
+          {"field": {"Name": "available_seats_ec_c"}}
+        ]
+      });
+
+      if (!response.success) {
+        console.error(response.message);
+        return null;
+      }
+
+      if (response.data) {
+        return {
+          '1A': response.data.available_seats_1a_c || 0,
+          '2A': response.data.available_seats_2a_c || 0,
+          '3A': response.data.available_seats_3a_c || 0,
+          'SL': response.data.available_seats_sl_c || 0,
+          'CC': response.data.available_seats_cc_c || 0,
+          'EC': response.data.available_seats_ec_c || 0
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`Error refreshing availability for train ${trainId}:`, error?.response?.data?.message || error);
+      return null;
+    }
+  },
+
+  async getFareBreakdown(trainId, travelClass, passengerCount = 1) {
+    try {
+      const train = await this.getById(trainId);
+      if (!train || !train.fare[travelClass]) {
+        return null;
+      }
+
+      const baseFare = train.fare[travelClass];
+      const reservationFee = travelClass === 'SL' ? 20 : 40;
+      const serviceTax = Math.round(baseFare * 0.05);
+      const totalPerPassenger = baseFare + reservationFee + serviceTax;
+
+      return {
+        baseFare,
+        reservationFee,
+        serviceTax,
+        totalPerPassenger,
+        totalAmount: totalPerPassenger * passengerCount,
+        breakdown: {
+          'Base Fare': baseFare * passengerCount,
+          'Reservation Fee': reservationFee * passengerCount,
+          'Service Tax (5%)': serviceTax * passengerCount
+        }
+      };
+    } catch (error) {
+      console.error(`Error getting fare breakdown:`, error?.response?.data?.message || error);
       return null;
     }
   }
