@@ -266,19 +266,21 @@ const trainService = {
         nextStation: 'Intermediate Station',
         platform: Math.floor(Math.random() * 10) + 1
       };
-    } catch (error) {
+} catch (error) {
       console.error(`Error getting train status for ${trainNumber}:`, error?.response?.data?.message || error);
       return null;
-return null;
     }
   },
 
-  async getRouteDetails(trainId) {
+async getRouteDetails(trainId) {
     try {
+      if (!trainId) return null;
+      
+      const train = await this.getTrainById(trainId);
       if (!train) return null;
 
       // Generate realistic intermediate stations between origin and destination
-      const intermediateStations = this.generateIntermediateStations(train.origin, train.destination);
+const intermediateStations = this.generateIntermediateStations(train.origin, train.destination);
       
       return {
         trainId: trainId,
