@@ -222,13 +222,13 @@ const handleRouteClick = (route) => {
             </div>
             <h2 className="text-xl font-semibold text-gray-900">Recent Searches</h2>
           </div>
-          
-          <div className="flex flex-wrap gap-3">
+<div className="flex flex-wrap gap-3">
             {recentSearches.map((search, index) => (
               <Badge 
                 key={index}
                 variant="primary" 
                 className="px-4 py-2 text-sm cursor-pointer hover:from-primary/20 hover:to-secondary/20 transition-all duration-200"
+                onClick={() => handleRouteClick(search)}
               >
                 {search.route}
               </Badge>
